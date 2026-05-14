@@ -43,45 +43,32 @@ foreach ($fileNames as $idx => $filename) {
     $title = $name;
     $artist = 'Unknown';
     $album = 'Unknown';
+    $duration = 0;
+    $filepath = $musicDir . '/' . $filename;
 
     if (preg_match('/^(.+?)\s+[-–]\s+(.+)$/u', $name, $m)) {
         $left = trim($m[1]);
         $right = trim($m[2]);
-
-        $knownArtists = ['Coldplay','Linkin Park','Juice WRLD','Lil Uzi Vert','Kendrick Lamar',
-            'Kali Uchis','Post Malone','Travis Scott','Playboi Carti','21 Savage','Lil Tecca',
-            'Metro Boomin','Gunna','Roddy Ricch','The Walters','Tay-K','keshi','Avicii',
-            'Oliver Tree','Tyler','Rema','Steve Lacy','NEFFEX','Sabrina Carpenter','Troye Sivan',
-            'Lil Pump','Denzel Curry','Pamungkas','Armada','JKT48','YOASOBI','Juicy Luicy',
-            'TheFatRat','MikkyZia','NIKI','Tears For Fears','Gucci Mane','Bruno Mars',
-            'Pharrell Williams','Calvin Harris','Naykilla','Neck Deep','Rex Orange County',
-            'Yeat','Tommy Richman','Cochise','Ghostface Playa','Crystal Castles',
-            'Charlie Puth','d4vd','bbno$','LeeHi','YOASOBI','Parry Gripp','A-Wall',
-            'Mario Judah','Colio','Dj Rendy','Denise Julia','Nicky Youre','Nafeesisboujee',
-            'Armut','Cowbell Cult','JaWNY','Adam Oh','Issam Alnajjar'];
-
-        $leftLower = strtolower($left);
-        $rightLower = strtolower($right);
-        $leftIsArtist = false;
-        $rightIsArtist = false;
-
-        foreach ($knownArtists as $ka) {
-            if ($leftLower === strtolower($ka) || stripos($leftLower, strtolower($ka)) !== false) $leftIsArtist = true;
-            if ($rightLower === strtolower($ka) || stripos($rightLower, strtolower($ka)) !== false) $rightIsArtist = true;
+        if (strlen($left) <= strlen($right) * 0.6) {
+            $artist = $left;
+            $title = $right;
+        } elseif (strlen($right) <= strlen($left) * 0.6) {
+            $artist = $right;
+            $title = $left;
         }
+    }
 
-        if ($leftIsArtist && !$rightIsArtist) {
-            $artist = $left;
-            $title = $right;
-        } elseif ($rightIsArtist && !$leftIsArtist) {
-            $artist = $right;
-            $title = $left;
-        } elseif (strlen($left) < strlen($right)) {
-            $artist = $left;
-            $title = $right;
-        } else {
-            $artist = $right;
-            $title = $left;
+    if ($artist === 'Unknown' || $album === 'Unknown' || $duration === 0) {
+        $meta = @shell_exec("timeout 3 ffprobe -v quiet -print_format json -show_entries format_tags:format=duration " . escapeshellarg($filepath) . " 2>/dev/null");
+        if ($meta) {
+            $data = @json_decode($meta, true);
+            if (isset($data['format'])) {
+                $tags = $data['format']['tags'] ?? [];
+                if (!empty($tags['title'])) $title = $tags['title'];
+                if (!empty($tags['artist'])) $artist = $tags['artist'];
+                if (!empty($tags['album'])) $album = $tags['album'];
+                if (isset($data['format']['duration'])) $duration = (int)$data['format']['duration'];
+            }
         }
     }
 
@@ -91,7 +78,7 @@ foreach ($fileNames as $idx => $filename) {
         'artist' => $artist,
         'album' => $album,
         'file' => $filename,
-        'duration' => 0,
+        'duration' => $duration,
         'cover' => '/api/cover.php?file=' . rawurlencode($filename)
     ];
 }
