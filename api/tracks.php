@@ -74,10 +74,15 @@ foreach ($fileNames as $idx => $filename) {
     }
     if (!$album) $album = 'Unknown';
 
+    $artistList = preg_split('/\s*(?:[,;\/&]|\sfeat\.?\s|\swith\s)\s*/i', $artist);
+    $artistList = array_map('trim', $artistList);
+    $artistList = array_values(array_filter($artistList, fn($a) => $a !== ''));
+
     $tracks[] = [
         'id' => $idx,
         'title' => $title,
         'artist' => $artist,
+        'artists' => $artistList,
         'album' => $album,
         'file' => $filename,
         'duration' => $duration,
@@ -88,7 +93,9 @@ foreach ($fileNames as $idx => $filename) {
 $artistCovers = [];
 $albumCovers = [];
 foreach ($tracks as $t) {
-    if (!isset($artistCovers[$t['artist']])) $artistCovers[$t['artist']] = $t['cover'];
+    foreach ($t['artists'] as $a) {
+        if (!isset($artistCovers[$a])) $artistCovers[$a] = $t['cover'];
+    }
     $key = $t['artist'] . '||' . $t['album'];
     if (!isset($albumCovers[$key])) $albumCovers[$key] = $t['cover'];
 }
@@ -96,7 +103,9 @@ foreach ($tracks as $t) {
 $artistMap = [];
 $albumMap = [];
 foreach ($tracks as $t) {
-    $artistMap[$t['artist']] = ($artistMap[$t['artist']] ?? 0) + 1;
+    foreach ($t['artists'] as $a) {
+        $artistMap[$a] = ($artistMap[$a] ?? 0) + 1;
+    }
     $albumKey = $t['artist'] . '||' . $t['album'];
     $albumMap[$albumKey] = ($albumMap[$albumKey] ?? 0) + 1;
 }

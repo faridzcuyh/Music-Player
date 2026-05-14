@@ -723,7 +723,7 @@
             let list = library.tracks;
 
             if (artistFilter) {
-                list = list.filter(t => t.artist === artistFilter);
+                list = list.filter(t => t.artists && t.artists.includes(artistFilter));
             }
             if (albumFilter) {
                 list = list.filter(t => t.artist + '||' + t.album === albumFilter);
