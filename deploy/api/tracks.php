@@ -103,7 +103,7 @@ foreach ($tracks as $t) {
 
 $artists = [];
 foreach ($artistMap as $name => $count) {
-    $artists[] = ['name' => $name, 'count' => $count, 'cover' => $artistCovers[$name] ?? null];
+    $artists[] = ['name' => $name, 'count' => $count];
 }
 usort($artists, fn($a, $b) => strcasecmp($a['name'], $b['name']));
 
