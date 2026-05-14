@@ -41,36 +41,38 @@ foreach ($fileNames as $idx => $filename) {
     $name = preg_replace('/\-Hh5jEQraXaw-\d+-\d+$/', '', $name);
 
     $title = $name;
-    $artist = 'Unknown';
-    $album = 'Unknown';
+    $artist = null;
+    $album = null;
     $duration = 0;
     $filepath = $musicDir . '/' . $filename;
 
-    if (preg_match('/^(.+?)\s+[-–]\s+(.+)$/u', $name, $m)) {
-        $left = trim($m[1]);
-        $right = trim($m[2]);
-        if (strlen($left) <= strlen($right) * 0.6) {
-            $artist = $left;
-            $title = $right;
-        } elseif (strlen($right) <= strlen($left) * 0.6) {
-            $artist = $right;
-            $title = $left;
+    $meta = @shell_exec("timeout 1 /usr/bin/ffprobe -v quiet -print_format json -show_entries format_tags:format=duration " . escapeshellarg($filepath) . " 2>/dev/null");
+    if ($meta) {
+        $data = @json_decode($meta, true);
+        if (isset($data['format'])) {
+            $tags = $data['format']['tags'] ?? [];
+            if (!empty($tags['title'])) $title = $tags['title'];
+            if (!empty($tags['artist'])) $artist = $tags['artist'];
+            if (!empty($tags['album'])) $album = $tags['album'];
+            if (isset($data['format']['duration'])) $duration = (int)$data['format']['duration'];
         }
     }
 
-    if ($artist === 'Unknown' || $album === 'Unknown' || $duration === 0) {
-        $meta = @shell_exec("timeout 3 ffprobe -v quiet -print_format json -show_entries format_tags:format=duration " . escapeshellarg($filepath) . " 2>/dev/null");
-        if ($meta) {
-            $data = @json_decode($meta, true);
-            if (isset($data['format'])) {
-                $tags = $data['format']['tags'] ?? [];
-                if (!empty($tags['title'])) $title = $tags['title'];
-                if (!empty($tags['artist'])) $artist = $tags['artist'];
-                if (!empty($tags['album'])) $album = $tags['album'];
-                if (isset($data['format']['duration'])) $duration = (int)$data['format']['duration'];
+    if (!$artist) {
+        if (preg_match('/^(.+?)\s+[-–]\s+(.+)$/u', $name, $m)) {
+            $left = trim($m[1]);
+            $right = trim($m[2]);
+            if (strlen($left) <= strlen($right) * 0.6) {
+                $artist = $left;
+                $title = $right;
+            } elseif (strlen($right) <= strlen($left) * 0.6) {
+                $artist = $right;
+                $title = $left;
             }
         }
+        if (!$artist) $artist = 'Unknown';
     }
+    if (!$album) $album = 'Unknown';
 
     $tracks[] = [
         'id' => $idx,
@@ -83,6 +85,14 @@ foreach ($fileNames as $idx => $filename) {
     ];
 }
 
+$artistCovers = [];
+$albumCovers = [];
+foreach ($tracks as $t) {
+    if (!isset($artistCovers[$t['artist']])) $artistCovers[$t['artist']] = $t['cover'];
+    $key = $t['artist'] . '||' . $t['album'];
+    if (!isset($albumCovers[$key])) $albumCovers[$key] = $t['cover'];
+}
+
 $artistMap = [];
 $albumMap = [];
 foreach ($tracks as $t) {
@@ -93,14 +103,14 @@ foreach ($tracks as $t) {
 
 $artists = [];
 foreach ($artistMap as $name => $count) {
-    $artists[] = ['name' => $name, 'count' => $count];
+    $artists[] = ['name' => $name, 'count' => $count, 'cover' => $artistCovers[$name] ?? null];
 }
 usort($artists, fn($a, $b) => strcasecmp($a['name'], $b['name']));
 
 $albums = [];
 foreach ($albumMap as $key => $count) {
     [$a, $al] = explode('||', $key, 2);
-    $albums[] = ['artist' => $a, 'album' => $al, 'count' => $count];
+    $albums[] = ['artist' => $a, 'album' => $al, 'count' => $count, 'cover' => $albumCovers[$key] ?? null];
 }
 usort($albums, fn($a, $b) => strcasecmp($a['artist'], $b['artist']) ?: strcasecmp($a['album'], $b['album']));
 

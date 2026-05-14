@@ -218,6 +218,7 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            overflow: hidden;
         }
         .album-icon { border-radius: 10px; }
         .artist-icon svg, .album-icon svg { width: 20px; height: 20px; fill: #381E72; }
@@ -814,15 +815,17 @@
                 container.innerHTML = '<div class="empty">Tidak ada artis ditemukan</div>';
                 return;
             }
-            container.innerHTML = artists.map(a => `
+            container.innerHTML = artists.map(a => {
+                const coverStyle = a.cover ? `style="background-image:url('${a.cover}');background-size:cover;background-position:center"` : '';
+                return `
                 <div class="artist-item" onclick="showArtistSongs('${escHtml(a.name)}')">
-                    <div class="artist-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div>
+                    <div class="artist-icon" ${coverStyle}>${a.cover ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'}</div>
                     <div>
                         <div class="artist-name">${escHtml(a.name)}</div>
                         <div class="artist-count">${a.count} lagu</div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function renderAlbums(container, header) {
@@ -836,15 +839,17 @@
                 container.innerHTML = '<div class="empty">Tidak ada album ditemukan</div>';
                 return;
             }
-            container.innerHTML = albums.map(a => `
+            container.innerHTML = albums.map(a => {
+                const coverStyle = a.cover ? `style="background-image:url('${a.cover}');background-size:cover;background-position:center"` : '';
+                return `
                 <div class="album-item" onclick="showAlbumSongs('${escHtml(a.artist)}', '${escHtml(a.album)}')">
-                    <div class="album-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/></svg></div>
+                    <div class="album-icon" ${coverStyle}>${a.cover ? '' : '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.49 0-4.5-2.01-4.5-4.5S9.51 7.5 12 7.5s4.5 2.01 4.5 4.5-2.01 4.5-4.5 4.5zm0-5.5c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/></svg>'}</div>
                     <div>
                         <div class="album-name">${escHtml(a.album)}</div>
                         <div class="album-artist">${escHtml(a.artist)} · ${a.count} lagu</div>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         }
 
         function clearFilter() {

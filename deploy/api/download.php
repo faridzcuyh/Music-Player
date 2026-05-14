@@ -37,6 +37,10 @@ if (isMediaPlatformUrl($url)) {
 }
 
 if ($result) {
+    $cacheFile = '/var/www/music-player/cache/tracks.json';
+    if (file_exists($cacheFile)) @unlink($cacheFile);
+    $ctx = stream_context_create(['http' => ['timeout' => 120]]);
+    @file_get_contents('http://localhost:8008/api/tracks.php', false, $ctx);
     echo json_encode([
         'success' => true,
         'filename' => $result['filename'],
