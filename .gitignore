@@ -1,0 +1,8 @@
+*.mp3
+*.flac
+*.wav
+*.ogg
+*.m4a
+*.aac
+*.lrc
+cache/
