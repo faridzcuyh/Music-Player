@@ -318,6 +318,22 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .snackbar{position:fixed;bottom:calc(var(--npbar-h) + 18px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface-container-highest);color:var(--on-surface);padding:12px 22px;border-radius:var(--r-full);font-size:14px;font-weight:600;box-shadow:var(--e4);z-index:120;opacity:0;pointer-events:none;transition:all .3s var(--spring);max-width:92vw;text-align:center}
 .snackbar.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ============ FX / EFFECTS ============ */
+.fx-group{margin-bottom:18px}
+.fx-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.fx-head > label{font-size:13px;font-weight:700;color:var(--on-surface-variant);text-transform:uppercase;letter-spacing:.05em}
+.fx-head .fx-val{font-size:13.5px;font-weight:800;color:var(--primary);font-variant-numeric:tabular-nums}
+.fx-chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.fx-chips .chip{padding:5px 14px;border-radius:99px;background:var(--surface-container);font-size:12px;font-weight:700;color:var(--on-surface-variant);transition:all .2s var(--std)}
+.fx-chips .chip:hover{background:var(--surface-container-high)}
+.fx-chips .chip.active{background:var(--primary);color:var(--on-primary)}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.switch .slider{position:absolute;inset:0;background:var(--surface-container-highest);border:1px solid var(--outline-variant);border-radius:99px;transition:background .2s var(--std)}
+.switch .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--outline);border-radius:50%;transition:transform .25s var(--spring),background .2s}
+.switch input:checked + .slider{background:var(--primary);border-color:var(--primary)}
+.switch input:checked + .slider::before{transform:translateX(20px);background:var(--on-primary)}
+
 /* skeleton loading */
 .skel{border-radius:var(--r-md);background:linear-gradient(90deg,var(--surface-container) 25%,var(--surface-container-high) 50%,var(--surface-container) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
@@ -468,6 +484,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
         <button class="play-big" data-action="play-pause" id="btn-play2"><svg viewBox="0 0 24 24" fill="currentColor" class="play"><path d="M8 5v14l11-7z"/></svg><svg viewBox="0 0 24 24" fill="currentColor" class="pause" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
         <button class="btn-icon" data-action="next"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
         <button class="btn-icon" data-action="repeat" id="btn-repeat2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg></button>
+        <button class="btn-icon" data-action="open-effects" title="Effects"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20h4V4h-4v16zm-6 0h4v-8H4v8zM16 9v11h4V9h-4z"/></svg></button>
       </div>
     </div>
     <div class="upnext" id="upnext"></div>
@@ -496,6 +513,38 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   <div class="m-actions">
     <button class="btn btn-tonal" data-action="close-url">Cancel</button>
     <button class="btn btn-filled" data-action="do-url" id="btn-url-do">Download</button>
+  </div>
+</div>
+
+<div class="modal" id="modal-effects">
+  <h3>Effects</h3>
+  <div class="fx-group">
+    <div class="fx-head"><label>Speed</label><span class="fx-val" id="fx-speed-val">1.00x</span></div>
+    <input type="range" id="fx-speed" min="0.25" max="2" step="0.05" value="1">
+    <div class="fx-chips" id="fx-speed-chips">
+      <button class="chip" data-fx-speed="0.5">0.5x</button>
+      <button class="chip" data-fx-speed="0.75">0.75x</button>
+      <button class="chip" data-fx-speed="1">1x</button>
+      <button class="chip" data-fx-speed="1.25">1.25x</button>
+      <button class="chip" data-fx-speed="1.5">1.5x</button>
+      <button class="chip" data-fx-speed="2">2x</button>
+    </div>
+  </div>
+  <div class="fx-group">
+    <div class="fx-head"><label>Pitch</label><span class="fx-val" id="fx-pitch-val">0 st</span></div>
+    <input type="range" id="fx-pitch" min="-12" max="12" step="1" value="0">
+  </div>
+  <div class="fx-group">
+    <div class="fx-head"><label>Bass Boost</label><label class="switch"><input type="checkbox" id="fx-bass-on"><span class="slider"></span></label></div>
+    <input type="range" id="fx-bass" min="0" max="20" step="0.5" value="8">
+    <div class="fx-head" style="margin-top:2px"><span></span><span class="fx-val" id="fx-bass-val">0 dB</span></div>
+  </div>
+  <div class="fx-group">
+    <div class="fx-head"><label>Reverb</label><label class="switch"><input type="checkbox" id="fx-reverb"><span class="slider"></span></label></div>
+  </div>
+  <div class="m-actions">
+    <button class="btn btn-tonal" data-action="fx-reset">Reset</button>
+    <button class="btn btn-filled" data-action="close-effects">Done</button>
   </div>
 </div>
 
@@ -675,7 +724,7 @@ async function applySeedFromCover(t){
 
 /* ---------- player controls ---------- */
 function togglePlay(){ if(!state.queue.length)return;
-  if(audio.paused){audio.play().catch(()=>{});}else{audio.pause();} }
+  if(audio.paused){fxInit(); if(FX.ctx&&FX.ctx.state==='suspended')FX.ctx.resume(); audio.play().catch(()=>{});}else{audio.pause();} }
 function next(auto){
   if(state.repeat==='one'&&!auto){} // manual next skips
   if(!state.queue.length)return;
@@ -992,6 +1041,13 @@ function hideModal(id){$('#'+id).classList.remove('show');if(!$$('.modal.show').
 
 /* ---------- global click delegation ---------- */
 document.addEventListener('click',e=>{
+  const fxChip=e.target.closest('[data-fx-speed]');
+  if(fxChip){
+    FX.speed=+fxChip.dataset.fxSpeed; fxApply();
+    $('#fx-speed').value=FX.speed; $('#fx-speed-val').textContent=FX.speed.toFixed(2)+'x';
+    $$('#fx-speed-chips .chip').forEach(c=>c.classList.toggle('active',c===fxChip));
+    return;
+  }
   const el=e.target.closest('[data-action],[data-nav]');
   if(el)hideMenu();
   if(!el)return;
@@ -1036,6 +1092,12 @@ document.addEventListener('click',e=>{
     case 'open-url':showModal('modal-url');break;
     case 'close-url':hideModal('modal-url');break;
     case 'do-url':doUrlDownload();break;
+    case 'open-effects':fxInit();showModal('modal-effects');break;
+    case 'close-effects':hideModal('modal-effects');break;
+    case 'fx-reset':{
+      FX.speed=1;FX.pitch=0;FX.bass=8;FX.bassOn=false;FX.reverb=false;
+      fxLoad();fxApply();snack('Effects reset');break;
+    }
     case 'clear-search':state.searchQ='';renderSearch();$('#search-input').focus();break;
     case 'track-menu':{
       e.preventDefault();e.stopPropagation();
@@ -1096,6 +1158,7 @@ $('#seek-full').addEventListener('input',e=>{
 $('#vol').addEventListener('input',e=>{
   const v=+e.target.value/100;
   audio.volume=v; audio.muted=false; state.muted=false;
+  if(FX.gainNode)FX.gainNode.gain.value=v;
   state.volume=v; localStorage.setItem('musica.vol',v);
   updatePlayUI();
 });
@@ -1148,9 +1211,67 @@ if('mediaSession' in navigator){
   }catch(e){}
 }
 
+/* ---------- audio effects (Web Audio: speed, pitch, bass, reverb) ---------- */
+const FX = {
+  speed:1, pitch:0, bass:8, bassOn:false, reverb:false,
+  ctx:null, source:null, bassFilter:null, convolver:null, reverbGain:null, dryGain:null, gainNode:null
+};
+function fxInit(){
+  if(FX.ctx) return;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    FX.ctx=new AC();
+    FX.source=FX.ctx.createMediaElementSource(audio);
+    FX.bassFilter=FX.ctx.createBiquadFilter();
+    FX.bassFilter.type='lowshelf'; FX.bassFilter.frequency.value=150; FX.bassFilter.gain.value=0;
+    FX.convolver=FX.ctx.createConvolver();
+    FX.reverbGain=FX.ctx.createGain(); FX.reverbGain.gain.value=0;
+    FX.dryGain=FX.ctx.createGain(); FX.dryGain.gain.value=1;
+    const merger=FX.ctx.createGain();
+    FX.source.connect(FX.bassFilter);
+    FX.bassFilter.connect(FX.dryGain);
+    FX.bassFilter.connect(FX.convolver);
+    FX.convolver.connect(FX.reverbGain);
+    FX.dryGain.connect(merger); FX.reverbGain.connect(merger);
+    FX.gainNode=FX.ctx.createGain(); FX.gainNode.gain.value=state.volume;
+    merger.connect(FX.gainNode); FX.gainNode.connect(FX.ctx.destination);
+    // generated impulse response (1.5s exponential decay)
+    const sr=FX.ctx.sampleRate,len=sr*1.5,buf=FX.ctx.createBuffer(2,len,sr);
+    for(let ch=0;ch<2;ch++){const d=buf.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);}
+    FX.convolver.buffer=buf;
+    fxApply();
+  }catch(e){console.warn('FX init failed',e);}
+}
+function fxApply(){
+  audio.playbackRate=FX.speed;
+  if('detune' in audio) audio.detune=FX.pitch*100;
+  if(FX.bassFilter) FX.bassFilter.gain.value=FX.bassOn?FX.bass:0;
+  if(FX.reverbGain){FX.reverbGain.gain.value=FX.reverb?0.5:0;FX.dryGain.gain.value=FX.reverb?0.7:1;}
+  fxPersist();
+}
+function fxPersist(){ try{localStorage.setItem('musica.fx',JSON.stringify({speed:FX.speed,pitch:FX.pitch,bass:FX.bass,bassOn:FX.bassOn,reverb:FX.reverb}));}catch(e){} }
+function fxLoad(){
+  try{
+    const f=JSON.parse(localStorage.getItem('musica.fx')||'null');
+    if(f){FX.speed=f.speed??1;FX.pitch=f.pitch??0;FX.bass=f.bass??8;FX.bassOn=!!f.bassOn;FX.reverb=!!f.reverb;}
+  }catch(e){}
+  $('#fx-speed').value=FX.speed; $('#fx-speed-val').textContent=FX.speed.toFixed(2)+'x';
+  $('#fx-pitch').value=FX.pitch; $('#fx-pitch-val').textContent=(FX.pitch>0?'+':'')+FX.pitch+' st';
+  $('#fx-bass').value=FX.bass; $('#fx-bass-val').textContent=(FX.bassOn?FX.bass:0)+' dB';
+  $('#fx-bass').disabled=!FX.bassOn; $('#fx-bass-on').checked=FX.bassOn; $('#fx-reverb').checked=FX.reverb;
+  $$('#fx-speed-chips .chip').forEach(c=>c.classList.toggle('active',Math.abs(+c.dataset.fxSpeed-FX.speed)<0.01));
+  if(FX.ctx) fxApply(); else {audio.playbackRate=FX.speed; if('detune' in audio)audio.detune=FX.pitch*100;}
+}
+$('#fx-speed').addEventListener('input',e=>{FX.speed=+e.target.value;fxApply();$('#fx-speed-val').textContent=FX.speed.toFixed(2)+'x';$$('#fx-speed-chips .chip').forEach(c=>c.classList.toggle('active',Math.abs(+c.dataset.fxSpeed-FX.speed)<0.01));});
+$('#fx-pitch').addEventListener('input',e=>{FX.pitch=+e.target.value;fxApply();$('#fx-pitch-val').textContent=(FX.pitch>0?'+':'')+FX.pitch+' st';});
+$('#fx-bass').addEventListener('input',e=>{FX.bass=+e.target.value;fxApply();$('#fx-bass-val').textContent=(FX.bassOn?FX.bass:0)+' dB';});
+$('#fx-bass-on').addEventListener('change',e=>{FX.bassOn=e.target.checked;$('#fx-bass').disabled=!FX.bassOn;fxApply();$('#fx-bass-val').textContent=(FX.bassOn?FX.bass:0)+' dB';});
+$('#fx-reverb').addEventListener('change',e=>{FX.reverb=e.target.checked;fxApply();});
+
 /* ---------- init ---------- */
 (async function init(){
   applySeed(); // default purple (heritage 😄)
+  fxLoad();
   try{
     await loadData();
   }catch(e){
