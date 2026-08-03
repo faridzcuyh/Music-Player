@@ -706,6 +706,7 @@ function playCurrent(){
   const t=state.queue[state.qi]; if(!t)return;
   audio.src='/music/'+encodeURIComponent(t.file);
   audio.play().catch(()=>{});
+  fxApply(); // re-apply speed/pitch (browsers reset on src change)
   updateNPMeta(t);
   applySeedFromCover(t);
   renderAll();
@@ -1140,6 +1141,7 @@ audio.addEventListener('ended',()=>{if(state.repeat==='one'){audio.currentTime=0
 audio.addEventListener('loadedmetadata',()=>{
   updateProgress();
   $('#t-dur').textContent=fmt(audio.duration||0);
+  fxApply(); // some browsers reset rate on metadata load
 });
 audio.addEventListener('error',()=>{ if(state.queue.length){snack('Can\'t play: '+((state.queue[state.qi]||{}).title||'track'));next(true);} });
 
@@ -1243,8 +1245,17 @@ function fxInit(){
   }catch(e){console.warn('FX init failed',e);}
 }
 function fxApply(){
-  audio.playbackRate=FX.speed;
-  if('detune' in audio) audio.detune=FX.pitch*100;
+  const p=FX.pitch||0;
+  if('detune' in audio){
+    // Safari: native detune (pitch-only, tempo unchanged)
+    audio.preservesPitch=true;
+    audio.detune=p*100;
+    audio.playbackRate=FX.speed;
+  }else{
+    // Chromium/Firefox: no media detune → pitch via rate (vinyl effect)
+    audio.preservesPitch=(p===0);
+    audio.playbackRate=FX.speed*Math.pow(2,p/12);
+  }
   if(FX.bassFilter) FX.bassFilter.gain.value=FX.bassOn?FX.bass:0;
   if(FX.reverbGain){FX.reverbGain.gain.value=FX.reverb?0.5:0;FX.dryGain.gain.value=FX.reverb?0.7:1;}
   fxPersist();
@@ -1260,7 +1271,7 @@ function fxLoad(){
   $('#fx-bass').value=FX.bass; $('#fx-bass-val').textContent=(FX.bassOn?FX.bass:0)+' dB';
   $('#fx-bass').disabled=!FX.bassOn; $('#fx-bass-on').checked=FX.bassOn; $('#fx-reverb').checked=FX.reverb;
   $$('#fx-speed-chips .chip').forEach(c=>c.classList.toggle('active',Math.abs(+c.dataset.fxSpeed-FX.speed)<0.01));
-  if(FX.ctx) fxApply(); else {audio.playbackRate=FX.speed; if('detune' in audio)audio.detune=FX.pitch*100;}
+  fxApply();
 }
 $('#fx-speed').addEventListener('input',e=>{FX.speed=+e.target.value;fxApply();$('#fx-speed-val').textContent=FX.speed.toFixed(2)+'x';$$('#fx-speed-chips .chip').forEach(c=>c.classList.toggle('active',Math.abs(+c.dataset.fxSpeed-FX.speed)<0.01));});
 $('#fx-pitch').addEventListener('input',e=>{FX.pitch=+e.target.value;fxApply();$('#fx-pitch-val').textContent=(FX.pitch>0?'+':'')+FX.pitch+' st';});
