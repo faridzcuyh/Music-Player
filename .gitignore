@@ -1,0 +1,10 @@
+# Generated cache (cover art, tracks index)
+cache/
+
+# Backup files
+*.bak
+*.bak.*
+
+# OS junk
+.DS_Store
+Thumbs.db
